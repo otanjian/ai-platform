@@ -1,0 +1,305 @@
+{
+  "id": "aiplatform",
+  "realm": "aiplatform",
+  "displayName": "企业级 AI 智造平台",
+  "displayNameHtml": "企业级 AI 智造平台",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "loginTheme": "aiplatform",
+  "internationalizationEnabled": true,
+  "supportedLocales": ["zh-CN", "en"],
+  "defaultLocale": "zh-CN",
+  "requiredActions": [
+    {
+      "alias": "VERIFY_PROFILE",
+      "name": "Verify Profile",
+      "providerId": "verify_profile",
+      "enabled": false,
+      "defaultAction": false
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "id": "role-default",
+        "name": "default-roles-aiplatform",
+        "description": "Default roles assigned to all users",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "aiplatform"
+      },
+      {
+        "id": "role-super-admin",
+        "name": "aiplatform-super-admin",
+        "description": "Full platform access",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "aiplatform"
+      },
+      {
+        "id": "role-developer",
+        "name": "aiplatform-developer",
+        "description": "Code factory and pipeline execution",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "aiplatform"
+      },
+      {
+        "id": "role-data-analyst",
+        "name": "aiplatform-data-analyst",
+        "description": "Data insights and AI brain",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "aiplatform"
+      },
+      {
+        "id": "role-business-user",
+        "name": "aiplatform-business-user",
+        "description": "AI brain and dashboard read access",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "aiplatform"
+      }
+    ]
+  },
+  "groups": [
+    {
+      "id": "group-default",
+      "name": "default",
+      "path": "/default"
+    }
+  ],
+  "users": [
+    {
+      "id": "user-admin",
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Platform",
+      "lastName": "Administrator",
+      "email": "admin@aiplatform.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["aiplatform-super-admin"],
+      "groups": ["/default"]
+    },
+    {
+      "id": "user-developer",
+      "username": "developer",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Dev",
+      "lastName": "User",
+      "email": "developer@aiplatform.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "developer",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["aiplatform-developer"],
+      "groups": ["/default"]
+    },
+    {
+      "id": "user-analyst",
+      "username": "analyst",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Data",
+      "lastName": "Analyst",
+      "email": "analyst@aiplatform.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "analyst",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["aiplatform-data-analyst"],
+      "groups": ["/default"]
+    },
+    {
+      "id": "user-business",
+      "username": "business",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Business",
+      "lastName": "User",
+      "email": "business@aiplatform.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "business",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["aiplatform-business-user"],
+      "groups": ["/default"]
+    }
+  ],
+  "clientScopes": [
+    {
+      "id": "scope-groups",
+      "name": "groups",
+      "description": "Group membership",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "groups",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "id": "scope-roles",
+      "name": "roles",
+      "description": "Realm role membership",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_roles",
+            "userinfo.token.claim": "true",
+            "multivalued": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "id": "client-gateway",
+      "clientId": "gateway",
+      "name": "AI Platform Gateway",
+      "description": "OIDC client for the unified BFF/API gateway",
+      "rootUrl": "http://localhost:3001",
+      "adminUrl": "http://localhost:3001",
+      "baseUrl": "http://localhost:3001",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "gateway-secret",
+      "redirectUris": [
+        "http://localhost:3000/auth/callback",
+        "http://localhost:3001/auth/callback"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "http://localhost:3001"
+      ],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "oidc.ciba.grant.enabled": "false",
+        "client.secret.creation.time": "1720000000",
+        "backchannel.logout.session.required": "true",
+        "backchannel.logout.revoke.offline.tokens": "false",
+        "post.logout.redirect.uris": "http://localhost:3000/login##http://localhost:3000/*##http://localhost:3001/*"
+      },
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "groups",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "profile",
+        "email",
+        "groups",
+        "roles"
+      ],
+      "optionalClientScopes": [
+        "offline_access"
+      ]
+    },
+    {
+      "id": "client-dataease-proxy",
+      "clientId": "dataease-proxy",
+      "name": "DataEase OIDC Proxy",
+      "description": "Confidential client used by the BFF to exchange tokens for DataEase",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "dataease-proxy-secret",
+      "redirectUris": ["http://localhost:3001/api/bi/auth/callback"],
+      "webOrigins": ["http://localhost:3001"],
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "defaultClientScopes": [
+        "profile",
+        "email",
+        "roles"
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "web-origins",
+    "acr",
+    "roles",
+    "profile",
+    "email"
+  ],
+  "browserFlow": "browser",
+  "registrationFlow": "registration",
+  "directGrantFlow": "direct grant",
+  "resetCredentialsFlow": "reset credentials",
+  "clientAuthenticationFlow": "clients",
+  "dockerAuthenticationFlow": "docker auth",
+  "keycloakVersion": "25.0.0"
+}

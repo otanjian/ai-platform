@@ -1,0 +1,35 @@
+port: 3001
+host: "0.0.0.0"
+frontendUrl: "http://localhost:3000"
+publicUrl: "http://localhost:3001"
+sessionSecret: "change-me-in-production"
+cookieName: "aiplatform_session"
+
+oidc:
+  enabled: true
+  issuer: "http://localhost:8080/realms/aiplatform"
+  clientId: "gateway"
+  redirectUri: "http://localhost:3001/auth/callback"
+  scopes: ["openid"]
+
+keycloak:
+  url: "http://localhost:8080"
+  realm: "aiplatform"
+  clientId: "gateway"
+  adminUsername: "admin"
+  adminPassword: "admin"
+
+subsystems:
+  opencode:
+    baseUrl: "http://localhost:4096"
+    password: "opencode"
+  dataease:
+    baseUrl: "http://localhost:8100"
+    clientId: "dataease-proxy"
+    clientSecret: "dataease-proxy-secret"
+  buildingai:
+    baseUrl: "http://localhost:4091"
+    apiKey: "buildingai-api-key"
+
+databaseUrl: "mysql://aiplatform:aiplatform@localhost:3306/aiplatform"
+redisUrl: "redis://localhost:6379"

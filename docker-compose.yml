@@ -1,0 +1,123 @@
+# Optional containerized orchestration.
+# The default deployment path is local (see README.md and start-local.sh).
+# Only use this file if you explicitly want to run the platform via Docker.
+version: "3.8"
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_GATEWAY_URL=http://gateway:3001
+    depends_on:
+      - gateway
+    networks:
+      - aiplatform
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "3001:3001"
+    environment:
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=aiplatform
+      - OPENCODE_URL=http://opencode:4096
+      - DATAEASE_URL=http://dataease:8100
+      - BUILDINGAI_URL=http://buildingai:4091
+      - DATABASE_URL=mysql://aiplatform:aiplatform@mysql:3306/aiplatform
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - keycloak
+      - mysql
+      - redis
+    networks:
+      - aiplatform
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    command:
+      - start-dev
+      - --import-realm
+      - --hostname=http://localhost:8080
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_DB: dev-file
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak/realm-import.json:/opt/keycloak/data/import/realm-import.json:ro
+      - ./keycloak/themes:/opt/keycloak/themes:ro
+    networks:
+      - aiplatform
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: aiplatform
+      MYSQL_USER: aiplatform
+      MYSQL_PASSWORD: aiplatform
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - aiplatform
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    networks:
+      - aiplatform
+
+  opencode:
+    image: opencode:latest
+    ports:
+      - "4096:4096"
+    environment:
+      - OPENCODE_SERVER_PASSWORD=opencode
+    networks:
+      - aiplatform
+
+  dataease:
+    # Use DataEase official docker-compose or image
+    # Placeholder: replace with actual DataEase service definition
+    image: dataease/dataease:latest
+    ports:
+      - "8100:8100"
+    environment:
+      - DE_MYSQL_HOST=mysql
+      - DE_MYSQL_PORT=3306
+      - DE_MYSQL_DB=dataease
+      - DE_MYSQL_USER=aiplatform
+      - DE_MYSQL_PASSWORD=aiplatform
+    depends_on:
+      - mysql
+    networks:
+      - aiplatform
+
+  buildingai:
+    # Placeholder: replace with actual BuildingAI service definition
+    build: ../buildingAI
+    ports:
+      - "4091:4091"
+    environment:
+      - DATABASE_URL=mysql://aiplatform:aiplatform@mysql:3306/buildingai
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - aiplatform
+
+volumes:
+  mysql_data:
+
+networks:
+  aiplatform:
+    driver: bridge
