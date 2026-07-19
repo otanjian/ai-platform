@@ -17,3 +17,5 @@ gateway/data/
 .env
 .env.*
 !**/.env.example
+openspec/
+方案思路.md
