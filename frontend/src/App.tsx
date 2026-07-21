@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useSession } from './hooks/useSession.ts'
 import { AppLayout } from './components/layout/AppLayout.tsx'
 import { DashboardPage } from './pages/DashboardPage.tsx'
+import { TaskHubPage } from './pages/TaskHubPage.tsx'
 import { CodeFactoryPage } from './pages/CodeFactoryPage.tsx'
 import { DataInsightsPage } from './pages/DataInsightsPage.tsx'
 import { AIBrainPage } from './pages/AIBrainPage.tsx'
@@ -28,6 +29,7 @@ function App() {
     <AppLayout>
       <Routes>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/task-hub/*" element={<TaskHubPage />} />
         <Route path="/code-factory/*" element={<CodeFactoryPage />} />
         <Route path="/data-insights/*" element={<DataInsightsPage />} />
         <Route path="/ai-brain/*" element={<AIBrainPage />} />

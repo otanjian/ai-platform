@@ -96,10 +96,15 @@ async function migrate() {
       }
 
       const sql = readFileSync(join(migrationsDir, file), "utf-8");
-      const statements = sql
+      // Strip full-line SQL comments before splitting so "-- note\nUPDATE ..." is not dropped.
+      const withoutLineComments = sql
+        .split("\n")
+        .map((line) => (line.trimStart().startsWith("--") ? "" : line))
+        .join("\n");
+      const statements = withoutLineComments
         .split(";")
         .map((s) => s.trim())
-        .filter((s) => s.length > 0 && !s.startsWith("--"));
+        .filter((s) => s.length > 0);
 
       for (const statement of statements) {
         await connection.query(statement + ";");

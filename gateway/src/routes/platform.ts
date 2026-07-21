@@ -24,6 +24,12 @@ import { parseReviewResult } from "../code-review.js"
 import { buildGithubWorkflowYaml, parseGithubWorkflowTriggers } from "../github-workflow.js"
 import { KeycloakAdminClient } from "../keycloak.js"
 import type { GatewayConfig } from "../types.js"
+import { AI_BRAIN_SETTINGS_MENU_ITEMS } from "../ai-brain-settings-menus.ts"
+import { AI_BRAIN_KNOWLEDGE_MENU_ITEMS } from "../ai-brain-knowledge-menus.ts"
+import { AI_BRAIN_WORKSPACE_MENU_ITEMS } from "../ai-brain-workspace-menus.ts"
+import { TASK_HUB_MENU_ITEMS } from "../task-hub-menus.ts"
+import { DATA_INSIGHTS_SUPERSET_MENU_ITEMS } from "../data-insights-superset-menus.ts"
+import { buildMenuTreeFromFlat } from "../menu-tree.ts"
 
 export function platformRouter(config: GatewayConfig) {
   const app = new Hono()
@@ -44,7 +50,8 @@ export function platformRouter(config: GatewayConfig) {
 
   const allMenuItems = [
     { code: "dashboard", label: "总览", icon: "LayoutDashboard", path: "/dashboard", parent: null, sort: 1 },
-    { code: "code_factory", label: "代码工场", icon: "Code2", path: "/code-factory", parent: null, sort: 2 },
+    ...TASK_HUB_MENU_ITEMS,
+    { code: "code_factory", label: "代码工场", icon: "Code2", path: "/code-factory", parent: null, sort: 3 },
     { code: "code_factory.chat", label: "AI 编程会话", icon: "MessageSquare", path: "/code-factory/chat", parent: "code_factory", sort: 1 },
     { code: "code_factory.sessions", label: "会话列表", icon: "List", path: "/code-factory/sessions", parent: "code_factory", sort: 2 },
     { code: "code_factory.review", label: "代码审查", icon: "GitPullRequest", path: "/code-factory/review", parent: "code_factory", sort: 3 },
@@ -52,31 +59,20 @@ export function platformRouter(config: GatewayConfig) {
     { code: "code_factory.project_init", label: "项目初始化", icon: "Rocket", path: "/code-factory/project-init", parent: "code_factory", sort: 5 },
     { code: "code_factory.github", label: "GitHub 自动化", icon: "Github", path: "/code-factory/github", parent: "code_factory", sort: 6 },
     { code: "code_factory.config", label: "配置管理", icon: "Settings", path: "/code-factory/config", parent: "code_factory", sort: 7 },
-    { code: "data_insights", label: "数据洞察", icon: "BarChart3", path: "/data-insights", parent: null, sort: 3 },
-    { code: "data_insights.dashboards", label: "仪表板中心", icon: "LayoutTemplate", path: "/data-insights/dashboards", parent: "data_insights", sort: 1 },
-    { code: "data_insights.charts", label: "图表库", icon: "PieChart", path: "/data-insights/charts", parent: "data_insights", sort: 2 },
-    { code: "data_insights.datasets", label: "数据集", icon: "Database", path: "/data-insights/datasets", parent: "data_insights", sort: 3 },
-    { code: "data_insights.smart_qa", label: "智能问数", icon: "Sparkles", path: "/data-insights/smart-qa", parent: "data_insights", sort: 4 },
-    { code: "data_insights.reports", label: "报表管理", icon: "FileText", path: "/data-insights/reports", parent: "data_insights", sort: 5 },
-    { code: "data_insights.datasources", label: "数据源管理", icon: "Server", path: "/data-insights/datasources", parent: "data_insights", sort: 6 },
-    { code: "data_insights.permissions", label: "数据权限", icon: "Shield", path: "/data-insights/permissions", parent: "data_insights", sort: 7 },
-    { code: "data_insights.orgs", label: "组织与角色", icon: "Users", path: "/data-insights/orgs", parent: "data_insights", sort: 8 },
-    { code: "data_insights.embedded", label: "嵌入式分析", icon: "Code", path: "/data-insights/embedded", parent: "data_insights", sort: 9 },
-    { code: "ai_brain", label: "AI大脑", icon: "Brain", path: "/ai-brain", parent: null, sort: 4 },
-    { code: "ai_brain.agents", label: "智能体管理", icon: "Bot", path: "/ai-brain/agents", parent: "ai_brain", sort: 1 },
-    { code: "ai_brain.knowledge", label: "知识库", icon: "Library", path: "/ai-brain/knowledge", parent: "ai_brain", sort: 2 },
-    { code: "ai_brain.models", label: "模型中心", icon: "Cpu", path: "/ai-brain/models", parent: "ai_brain", sort: 3 },
-    { code: "ai_brain.mcp", label: "MCP 工具", icon: "Wrench", path: "/ai-brain/mcp", parent: "ai_brain", sort: 4 },
-    { code: "ai_brain.chat", label: "Agent 对话", icon: "MessagesSquare", path: "/ai-brain/chat", parent: "ai_brain", sort: 5 },
-    { code: "ai_brain.publish", label: "Agent 发布", icon: "Rocket", path: "/ai-brain/publish", parent: "ai_brain", sort: 6 },
-    { code: "ai_brain.permissions", label: "应用权限", icon: "Lock", path: "/ai-brain/permissions", parent: "ai_brain", sort: 7 },
-    { code: "ai_brain.orchestration", label: "编排流程可视化", icon: "Network", path: "/ai-brain/orchestration", parent: "ai_brain", sort: 8 },
-    { code: "smart_pipeline", label: "智能流水线", icon: "Workflow", path: "/smart-pipeline", parent: null, sort: 5 },
+    ...DATA_INSIGHTS_SUPERSET_MENU_ITEMS,
+    { code: "ai_brain", label: "AI大脑", icon: "Brain", path: "/ai-brain", parent: null, sort: 5 },
+    ...AI_BRAIN_WORKSPACE_MENU_ITEMS,
+    { code: "ai_brain.agents", label: "智能体", icon: "Bot", path: "/ai-brain/agents", parent: "ai_brain", sort: 3 },
+    { code: "ai_brain.knowledge", label: "知识库", icon: "Library", path: "/ai-brain/knowledge", parent: "ai_brain", sort: 4 },
+    ...AI_BRAIN_KNOWLEDGE_MENU_ITEMS,
+    { code: "ai_brain.settings", label: "智能体设置", icon: "Settings", path: "/ai-brain/settings", parent: "ai_brain", sort: 6 },
+    ...AI_BRAIN_SETTINGS_MENU_ITEMS,
+    { code: "smart_pipeline", label: "智能流水线", icon: "Workflow", path: "/smart-pipeline", parent: null, sort: 6 },
     { code: "smart_pipeline.canvas", label: "流水线画布", icon: "Paintbrush", path: "/smart-pipeline/canvas", parent: "smart_pipeline", sort: 1 },
     { code: "smart_pipeline.templates", label: "模板市场", icon: "Store", path: "/smart-pipeline/templates", parent: "smart_pipeline", sort: 2 },
     { code: "smart_pipeline.history", label: "执行历史", icon: "History", path: "/smart-pipeline/history", parent: "smart_pipeline", sort: 3 },
     { code: "smart_pipeline.triggers", label: "触发器配置", icon: "Clock", path: "/smart-pipeline/triggers", parent: "smart_pipeline", sort: 4 },
-    { code: "system_settings", label: "系统管理", icon: "Settings", path: "/system-settings", parent: null, sort: 6 },
+    { code: "system_settings", label: "系统管理", icon: "Settings", path: "/system-settings", parent: null, sort: 7 },
     { code: "system_settings.users", label: "用户管理", icon: "Users", path: "/system-settings/users", parent: "system_settings", sort: 1 },
     { code: "system_settings.roles", label: "角色管理", icon: "Shield", path: "/system-settings/roles", parent: "system_settings", sort: 2 },
     { code: "system_settings.groups", label: "组管理", icon: "Group", path: "/system-settings/groups", parent: "system_settings", sort: 3 },
@@ -90,20 +86,8 @@ export function platformRouter(config: GatewayConfig) {
     { code: "system_settings.settings", label: "系统设置", icon: "Settings2", path: "/system-settings/settings", parent: "system_settings", sort: 10 },
   ]
 
-  const buildMenuTree = (allowed?: (code: string) => boolean) => {
-    const roots = allMenuItems
-      .filter((m) => m.parent === null && (!allowed || allowed(m.code)))
-      .sort((a, b) => a.sort - b.sort)
-      .map((m) => ({ ...m, children: [] as any[] }))
-    const rootMap = new Map(roots.map((r) => [r.code, r]))
-    for (const item of allMenuItems.filter((m) => m.parent !== null)) {
-      const parent = rootMap.get(item.parent)
-      if (parent && (!allowed || allowed(item.code))) {
-        parent.children.push({ ...item, children: [] })
-      }
-    }
-    return roots
-  }
+  const buildMenuTree = (allowed?: (code: string) => boolean) =>
+    buildMenuTreeFromFlat(allMenuItems, allowed)
 
   // Full menu tree for role permission assignment (no auth filtering)
   app.get("/admin/menu-tree", async (c) => {
@@ -124,9 +108,10 @@ export function platformRouter(config: GatewayConfig) {
 
   // Health & stats
   app.get("/gateway/health", async (c) => {
-    const [opencodeHealth, dataeaseHealth, buildingaiHealth] = await Promise.all([
+    const [opencodeHealth, taskviewHealth, supersetHealth, buildingaiHealth] = await Promise.all([
       probeHttp(config.subsystems.opencode.baseUrl),
-      probeHttp(config.subsystems.dataease.baseUrl),
+      probeHttp(config.subsystems.taskview.webBaseUrl),
+      probeHttp(config.subsystems.superset.baseUrl),
       probeHttp(config.subsystems.buildingai.baseUrl),
     ])
     return c.json({
@@ -135,7 +120,8 @@ export function platformRouter(config: GatewayConfig) {
       redis: "connected",
       keycloak: config.keycloak.url,
       opencode: opencodeHealth ? "online" : "offline",
-      dataease: dataeaseHealth ? "online" : "offline",
+      taskview: taskviewHealth ? "online" : "offline",
+      superset: supersetHealth ? "online" : "offline",
       buildingai: buildingaiHealth ? "online" : "offline",
     })
   })

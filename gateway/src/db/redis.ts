@@ -8,24 +8,30 @@ export const redis = new Redis(redisUrl, {
   lazyConnect: true,
 });
 
-export async function getToken(userId: string, system: "dataease" | "buildingai"): Promise<string | null> {
-  const key = `token:${userId}:${system}`;
-  return redis.get(key);
+export async function getToken(
+  userId: string,
+  system: "superset" | "taskview" | "buildingai" | "dataease",
+): Promise<string | null> {
+  const key = `token:${userId}:${system}`
+  return redis.get(key)
 }
 
 export async function setToken(
   userId: string,
-  system: "dataease" | "buildingai",
+  system: "superset" | "taskview" | "buildingai" | "dataease",
   token: string,
-  ttlSeconds: number
+  ttlSeconds: number,
 ): Promise<void> {
-  const key = `token:${userId}:${system}`;
-  await redis.setex(key, ttlSeconds, token);
+  const key = `token:${userId}:${system}`
+  await redis.setex(key, ttlSeconds, token)
 }
 
-export async function deleteToken(userId: string, system: "dataease" | "buildingai"): Promise<void> {
-  const key = `token:${userId}:${system}`;
-  await redis.del(key);
+export async function deleteToken(
+  userId: string,
+  system: "superset" | "taskview" | "buildingai" | "dataease",
+): Promise<void> {
+  const key = `token:${userId}:${system}`
+  await redis.del(key)
 }
 
 export async function cacheHealth(system: string, status: "online" | "offline", ttlSeconds: number = 30): Promise<void> {

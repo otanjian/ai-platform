@@ -53,7 +53,28 @@ export type RawConfig = {
   subsystems?: {
     opencode?: { baseUrl?: string; password?: string }
     dataease?: { baseUrl?: string; clientId?: string; clientSecret?: string }
-    buildingai?: { baseUrl?: string; apiKey?: string }
+    taskview?: {
+      webBaseUrl?: string
+      apiBaseUrl?: string
+      adminUsername?: string
+      adminPassword?: string
+      platformSsoSecret?: string
+    }
+    superset?: {
+      baseUrl?: string
+      apiBaseUrl?: string
+      adminUsername?: string
+      adminPassword?: string
+      platformSsoSecret?: string
+    }
+    buildingai?: {
+      baseUrl?: string
+      apiBaseUrl?: string
+      apiKey?: string
+      adminUsername?: string
+      adminPassword?: string
+      platformSsoSecret?: string
+    }
   }
   users?: Array<{
     username: string
@@ -178,16 +199,41 @@ function parseSubsystemsConfig(raw?: RawConfig["subsystems"]): SubsystemConfig {
       authType: "none",
       password: raw?.opencode?.password ?? "opencode",
     },
-    dataease: {
-      baseUrl: raw?.dataease?.baseUrl ?? "http://localhost:8100",
-      authType: "oidc",
-      clientId: raw?.dataease?.clientId ?? "dataease-proxy",
-      clientSecret: raw?.dataease?.clientSecret ?? "dataease-proxy-secret",
+    dataease: raw?.dataease
+      ? {
+          baseUrl: raw.dataease.baseUrl ?? "http://localhost:8100",
+          authType: "oidc",
+          clientId: raw.dataease.clientId ?? "dataease-proxy",
+          clientSecret: raw.dataease.clientSecret ?? "dataease-proxy-secret",
+        }
+      : undefined,
+    taskview: {
+      webBaseUrl: raw?.taskview?.webBaseUrl ?? "http://localhost:5174",
+      apiBaseUrl: raw?.taskview?.apiBaseUrl ?? "http://localhost:1401",
+      authType: "token",
+      adminUsername: raw?.taskview?.adminUsername ?? "user",
+      adminPassword: raw?.taskview?.adminPassword ?? "user1!#Q",
+      platformSsoSecret:
+        raw?.taskview?.platformSsoSecret ?? "aiplatform-taskview-sso-secret",
+    },
+    superset: {
+      baseUrl: raw?.superset?.baseUrl ?? "http://127.0.0.1:9060",
+      apiBaseUrl: raw?.superset?.apiBaseUrl ?? "http://127.0.0.1:9068",
+      authType: "token",
+      adminUsername: raw?.superset?.adminUsername ?? "admin",
+      adminPassword: raw?.superset?.adminPassword ?? "admin",
+      platformSsoSecret:
+        raw?.superset?.platformSsoSecret ?? "aiplatform-superset-sso-secret",
     },
     buildingai: {
       baseUrl: raw?.buildingai?.baseUrl ?? "http://localhost:4091",
+      apiBaseUrl: raw?.buildingai?.apiBaseUrl ?? "http://localhost:4090",
       authType: "token",
       apiKey: raw?.buildingai?.apiKey ?? "",
+      adminUsername: raw?.buildingai?.adminUsername ?? "Rock",
+      adminPassword: raw?.buildingai?.adminPassword ?? "Rock123",
+      platformSsoSecret:
+        raw?.buildingai?.platformSsoSecret ?? "aiplatform-buildingai-sso-secret",
     },
   }
 }

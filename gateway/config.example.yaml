@@ -23,13 +23,25 @@ subsystems:
   opencode:
     baseUrl: "http://localhost:4096"
     password: "opencode"
-  dataease:
-    baseUrl: "http://localhost:8100"
-    clientId: "dataease-proxy"
-    clientSecret: "dataease-proxy-secret"
+  taskview:
+    webBaseUrl: "http://localhost:5174"
+    apiBaseUrl: "http://localhost:1401"
+    adminUsername: "user"
+    adminPassword: "user1!#Q"
+    platformSsoSecret: "aiplatform-taskview-sso-secret"
+  superset:
+    baseUrl: "http://127.0.0.1:9060"
+    apiBaseUrl: "http://127.0.0.1:9068"
+    adminUsername: "admin"
+    adminPassword: "admin"
+    platformSsoSecret: "aiplatform-superset-sso-secret"
   buildingai:
     baseUrl: "http://localhost:4091"
+    apiBaseUrl: "http://localhost:4090"
     apiKey: "buildingai-api-key"
+    adminUsername: "Rock"
+    adminPassword: "Rock123"
+    platformSsoSecret: "aiplatform-buildingai-sso-secret"
 
 databaseUrl: "mysql://aiplatform:aiplatform@localhost:3306/aiplatform"
 redisUrl: "redis://localhost:6379"

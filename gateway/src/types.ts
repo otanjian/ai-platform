@@ -24,8 +24,33 @@ export type KeycloakConfig = {
 
 export type SubsystemConfig = {
   opencode: { baseUrl: string; authType: "none"; password?: string }
-  dataease: { baseUrl: string; authType: "oidc"; clientId: string; clientSecret: string }
-  buildingai: { baseUrl: string; authType: "token"; apiKey: string }
+  /** @deprecated Retained for migration; prefer superset */
+  dataease?: { baseUrl: string; authType: "oidc"; clientId: string; clientSecret: string }
+  taskview: {
+    webBaseUrl: string
+    apiBaseUrl: string
+    authType: "token"
+    adminUsername: string
+    adminPassword: string
+    platformSsoSecret: string
+  }
+  superset: {
+    baseUrl: string
+    apiBaseUrl: string
+    authType: "token"
+    adminUsername: string
+    adminPassword: string
+    platformSsoSecret: string
+  }
+  buildingai: {
+    baseUrl: string
+    apiBaseUrl: string
+    authType: "token"
+    apiKey: string
+    adminUsername: string
+    adminPassword: string
+    platformSsoSecret: string
+  }
 }
 
 export type GatewayConfig = {

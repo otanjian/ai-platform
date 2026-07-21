@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from '../hooks/useSession.ts'
 import { useHealth } from '../hooks/useHealth.ts'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card.tsx'
-import { BarChart3, Brain, Workflow, Search, X } from 'lucide-react'
+import { BarChart3, Brain, Workflow, Search, X, CheckSquare, Code2 } from 'lucide-react'
 
 export function DashboardPage() {
   const { data: session } = useSession()
@@ -25,6 +25,8 @@ export function DashboardPage() {
   }, [])
 
   const shortcuts = [
+    { label: '待办中心', icon: CheckSquare, path: '/task-hub', color: 'bg-cyan-100 text-cyan-700' },
+    { label: '代码工场', icon: Code2, path: '/code-factory', color: 'bg-indigo-100 text-indigo-700' },
     { label: '数据洞察', icon: BarChart3, path: '/data-insights', color: 'bg-emerald-100 text-emerald-700' },
     { label: 'AI大脑', icon: Brain, path: '/ai-brain', color: 'bg-violet-100 text-violet-700' },
     { label: '智能流水线', icon: Workflow, path: '/smart-pipeline', color: 'bg-amber-100 text-amber-700' },
@@ -38,6 +40,7 @@ export function DashboardPage() {
   ]
 
   const allModules = [
+    { name: '待办中心', path: '/task-hub' },
     { name: '代码工场', path: '/code-factory' },
     { name: '数据洞察', path: '/data-insights' },
     { name: 'AI大脑', path: '/ai-brain' },

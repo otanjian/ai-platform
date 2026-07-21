@@ -49,7 +49,8 @@ export function auditLogger(): MiddlewareHandler {
 
 function inferSubsystem(path: string): string {
   if (path.startsWith("/api/code")) return "opencode"
-  if (path.startsWith("/api/bi")) return "dataease"
+  if (path.startsWith("/api/bi")) return "superset"
+  if (path.startsWith("/api/taskview")) return "taskview"
   if (path.startsWith("/api/agent")) return "buildingai"
   if (path.startsWith("/api/pipeline") || path.startsWith("/api/admin")) return "platform"
   return "platform"

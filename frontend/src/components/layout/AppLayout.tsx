@@ -12,6 +12,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       return true
     }
   })
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
     try {
@@ -21,13 +22,23 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [sidebarOpen])
 
-  const toggleSidebar = () => setSidebarOpen((v) => !v)
+  const toggleSidebar = () => {
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+      setMobileOpen((v) => !v)
+      return
+    }
+    setSidebarOpen((v) => !v)
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
-      <Sidebar open={sidebarOpen} />
+      <Sidebar
+        open={sidebarOpen}
+        mobileOpen={mobileOpen}
+        onMobileOpenChange={setMobileOpen}
+      />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <TopBar sidebarOpen={sidebarOpen} onToggleSidebar={toggleSidebar} />
+        <TopBar sidebarOpen={sidebarOpen || mobileOpen} onToggleSidebar={toggleSidebar} />
         <main className="flex-1 overflow-auto p-4 lg:p-6">{children}</main>
       </div>
     </div>

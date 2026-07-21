@@ -1,26 +1,24 @@
-import { Routes, Route } from 'react-router-dom'
-import { AgentManagementPage } from './ai-brain/AgentManagementPage.tsx'
-import { KnowledgeBasePage } from './ai-brain/KnowledgeBasePage.tsx'
-import { ModelCenterPage } from './ai-brain/ModelCenterPage.tsx'
-import { McpToolsPage } from './ai-brain/McpToolsPage.tsx'
-import { AgentChatPage } from './ai-brain/AgentChatPage.tsx'
-import { AgentPublishPage } from './ai-brain/AgentPublishPage.tsx'
-import { AppPermissionsPage } from './ai-brain/AppPermissionsPage.tsx'
-import { OrchestrationPage } from './ai-brain/OrchestrationPage.tsx'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import {
+  AgentsEmbedPage,
+  KnowledgeSectionEmbedPage,
+  SettingsConsoleEmbedPage,
+  WorkspaceSectionEmbedPage,
+} from './ai-brain/BuildingAiEmbedPages.tsx'
 
 export function AIBrainPage() {
   return (
     <div className="h-full">
       <Routes>
-        <Route path="/" element={<AgentChatPage />} />
-        <Route path="/agents" element={<AgentManagementPage />} />
-        <Route path="/knowledge" element={<KnowledgeBasePage />} />
-        <Route path="/models" element={<ModelCenterPage />} />
-        <Route path="/mcp" element={<McpToolsPage />} />
-        <Route path="/chat/:agentId?" element={<AgentChatPage />} />
-        <Route path="/publish" element={<AgentPublishPage />} />
-        <Route path="/permissions" element={<AppPermissionsPage />} />
-        <Route path="/orchestration" element={<OrchestrationPage />} />
+        <Route path="/" element={<Navigate to="chat" replace />} />
+        <Route path="/chat" element={<WorkspaceSectionEmbedPage />} />
+        <Route path="/apps" element={<WorkspaceSectionEmbedPage />} />
+        <Route path="/history" element={<WorkspaceSectionEmbedPage />} />
+        <Route path="/agents" element={<AgentsEmbedPage />} />
+        <Route path="/knowledge" element={<Navigate to="/ai-brain/knowledge/plaza" replace />} />
+        <Route path="/knowledge/*" element={<KnowledgeSectionEmbedPage />} />
+        <Route path="/settings" element={<Navigate to="/ai-brain/settings/dashboard" replace />} />
+        <Route path="/settings/*" element={<SettingsConsoleEmbedPage />} />
       </Routes>
     </div>
   )

@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 set -e
 
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+cd "$ROOT"
+
 echo "Stopping AI Platform local services..."
 
-if [ -f .gateway.pid ]; then
-  kill "$(cat .gateway.pid)" 2>/dev/null || true
-  rm .gateway.pid
-fi
+for pidfile in .gateway.pid .frontend.pid .taskview-api.pid .taskview-web.pid; do
+  if [ -f "$pidfile" ]; then
+    kill "$(cat "$pidfile")" 2>/dev/null || true
+    rm -f "$pidfile"
+  fi
+done
 
-if [ -f .frontend.pid ]; then
-  kill "$(cat .frontend.pid)" 2>/dev/null || true
-  rm .frontend.pid
-fi
+# Superset is Docker-managed; leave it running unless explicitly stopped:
+#   (cd ../superset && docker compose down)
 
-echo "Stopped."
+echo "Stopped gateway / frontend / TaskView."
+echo "(Superset Docker stack left running; DataEase is never managed here.)"

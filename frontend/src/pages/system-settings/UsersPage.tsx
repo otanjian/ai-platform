@@ -33,7 +33,7 @@ export function UsersPage() {
   const [managingUser, setManagingUser] = useState<KeycloakUser | null>(null)
   const [userRoles, setUserRoles] = useState<string[]>([])
   const [userGroups, setUserGroups] = useState<Group[]>([])
-  const [form, setForm] = useState({ username: '', email: '', firstName: '', lastName: '', enabled: true })
+  const [form, setForm] = useState({ username: '', email: '', firstName: '', lastName: '', enabled: true, password: '' })
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -55,24 +55,38 @@ export function UsersPage() {
 
   const openCreate = () => {
     setEditing(null)
-    setForm({ username: '', email: '', firstName: '', lastName: '', enabled: true })
+    setForm({ username: '', email: '', firstName: '', lastName: '', enabled: true, password: '' })
     setFormOpen(true)
   }
 
   const openEdit = (user: KeycloakUser) => {
     setEditing(user)
-    setForm({ username: user.username, email: user.email || '', firstName: user.firstName || '', lastName: user.lastName || '', enabled: user.enabled })
+    setForm({ username: user.username, email: user.email || '', firstName: user.firstName || '', lastName: user.lastName || '', enabled: user.enabled, password: '' })
     setFormOpen(true)
   }
 
   const saveUser = async () => {
-    if (editing) {
-      await api.put(`/admin/keycloak/users/${editing.id}`, form)
-    } else {
-      await api.post('/admin/keycloak/users', form)
+    try {
+      if (editing) {
+        const { password: _pw, ...fields } = form
+        await api.put(`/admin/keycloak/users/${editing.id}`, fields)
+      } else {
+        if (!form.password) {
+          alert('新建用户须设置密码（6–20 位，含字母和数字），以便同步到 BuildingAI')
+          return
+        }
+        const res = await api.post('/admin/keycloak/users', form)
+        const sync = res.data?.buildingAiSync
+        if (sync && !sync.ok) {
+          alert(`用户已创建，但 BuildingAI 同步失败：${sync.error}`)
+        }
+      }
+      setFormOpen(false)
+      fetchUsers()
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      alert(msg || '保存用户失败')
     }
-    setFormOpen(false)
-    fetchUsers()
   }
 
   const toggleEnabled = async (user: KeycloakUser) => {
@@ -87,10 +101,19 @@ export function UsersPage() {
   }
 
   const resetPassword = async (user: KeycloakUser) => {
-    const pwd = prompt(`为 ${user.username} 设置新密码：`)
+    const pwd = prompt(`为 ${user.username} 设置新密码（6–20 位，含字母和数字）：`)
     if (!pwd) return
-    await api.put(`/admin/keycloak/users/${user.id}/password`, { password: pwd, temporary: false })
-    alert('密码已重置')
+    try {
+      const res = await api.put(`/admin/keycloak/users/${user.id}/password`, { password: pwd, temporary: false })
+      if (res.data?.warning) {
+        alert(res.data.warning)
+      } else {
+        alert('密码已重置，并已同步到 BuildingAI')
+      }
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      alert(msg || '重置密码失败')
+    }
   }
 
   const openManageMembership = async (user: KeycloakUser) => {
@@ -195,6 +218,18 @@ export function UsersPage() {
               )}
               {canRead(fieldPerms, 'lastName') && (
                 <input value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} placeholder="姓" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" disabled={!canWrite(fieldPerms, 'lastName')} />
+              )}
+              {!editing && canWrite(fieldPerms, 'password') && (
+                <div>
+                  <input
+                    type="password"
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                    placeholder="初始密码（6–20 位，含字母和数字）"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                  <p className="mt-1 text-xs text-slate-500">将同步到 BuildingAI，用户名与密码保持一致</p>
+                </div>
               )}
               {canRead(fieldPerms, 'enabled') && (
                 <label className="flex items-center gap-2 text-sm">

@@ -1,14 +1,108 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useMenu } from '../../hooks/useMenu.ts'
+import { useMenu, type MenuItem } from '../../hooks/useMenu.ts'
 import { useState, useMemo, useEffect } from 'react'
 import * as Icons from 'lucide-react'
+import { shouldCloseMobileDrawerAfterNav } from '../../lib/sidebarNav.ts'
 
-export function Sidebar({ open }: { open: boolean }) {
+function MenuNodes({
+  items,
+  depth,
+  activeCodes,
+  expanded,
+  toggleExpand,
+  onNavigate,
+}: {
+  items: MenuItem[]
+  depth: number
+  activeCodes: Set<string>
+  expanded: Set<string>
+  toggleExpand: (code: string) => void
+  onNavigate: () => void
+}) {
+  const pad = depth === 0 ? 'px-4 py-3 text-sm font-medium' : 'px-4 py-2 text-sm'
+  const iconSize = depth === 0 ? 'h-5 w-5' : 'h-4 w-4'
+
+  return (
+    <>
+      {items.map((item) => {
+        const Icon = (Icons as any)[item.icon] || Icons.Circle
+        const hasChildren = !!(item.children && item.children.length > 0)
+        const isActive = activeCodes.has(item.code)
+        const isExpanded = expanded.has(item.code)
+        return (
+          <div key={item.code}>
+            {hasChildren ? (
+              <button
+                type="button"
+                onClick={() => toggleExpand(item.code)}
+                className={`flex w-full items-center justify-between rounded-lg ${pad} transition-colors ${
+                  isActive
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <span className="flex items-center gap-3">
+                  <Icon className={iconSize} />
+                  {item.label}
+                </span>
+                {isExpanded ? (
+                  <Icons.ChevronDown className="h-4 w-4" />
+                ) : (
+                  <Icons.ChevronRight className="h-4 w-4" />
+                )}
+              </button>
+            ) : (
+              <Link
+                to={item.path}
+                onClick={onNavigate}
+                className={`flex items-center gap-3 rounded-lg ${pad} transition-colors ${
+                  isActive
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                }`}
+              >
+                <Icon className={iconSize} />
+                {item.label}
+              </Link>
+            )}
+            {hasChildren && isExpanded && (
+              <div className="ml-4 mt-1 space-y-1 border-l border-slate-200 pl-2">
+                <MenuNodes
+                  items={item.children!}
+                  depth={depth + 1}
+                  activeCodes={activeCodes}
+                  expanded={expanded}
+                  toggleExpand={toggleExpand}
+                  onNavigate={onNavigate}
+                />
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </>
+  )
+}
+
+export function Sidebar({
+  open,
+  mobileOpen,
+  onMobileOpenChange,
+}: {
+  open: boolean
+  mobileOpen: boolean
+  onMobileOpenChange: (open: boolean) => void
+}) {
   const { data: menu } = useMenu()
   const location = useLocation()
-  const [mobileOpen, setMobileOpen] = useState(false)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [collapsedByUser, setCollapsedByUser] = useState<Set<string>>(new Set())
+
+  const closeMobileDrawerIfNeeded = () => {
+    if (shouldCloseMobileDrawerAfterNav(window.innerWidth)) {
+      onMobileOpenChange(false)
+    }
+  }
 
   const activeCodes = useMemo(() => {
     const codes = new Set<string>()
@@ -25,7 +119,6 @@ export function Sidebar({ open }: { open: boolean }) {
     return codes
   }, [menu, location.pathname])
 
-  // Auto-expand ancestors of the active route, unless user collapsed them
   useEffect(() => {
     if (!menu) return
     setExpanded((prev) => {
@@ -66,10 +159,9 @@ export function Sidebar({ open }: { open: boolean }) {
 
   return (
     <>
-      {/* Mobile: always available hamburger when desktop sidebar may be hidden */}
       <button
         type="button"
-        onClick={() => setMobileOpen(!mobileOpen)}
+        onClick={() => onMobileOpenChange(!mobileOpen)}
         className="fixed left-4 top-4 z-40 rounded-lg bg-white p-2 shadow-sm lg:hidden"
       >
         {mobileOpen ? <Icons.X className="h-5 w-5" /> : <Icons.Menu className="h-5 w-5" />}
@@ -85,73 +177,16 @@ export function Sidebar({ open }: { open: boolean }) {
           <span className="truncate text-lg font-bold text-indigo-700">AI智造平台</span>
         </div>
         <nav className="w-64 flex-1 space-y-1 overflow-y-auto p-4">
-          {menu?.map((item) => {
-            const Icon = (Icons as any)[item.icon] || Icons.Circle
-            const hasChildren = item.children && item.children.length > 0
-            const isActive = activeCodes.has(item.code)
-            const isExpanded = expanded.has(item.code)
-            return (
-              <div key={item.code}>
-                {hasChildren ? (
-                  <button
-                    type="button"
-                    onClick={() => toggleExpand(item.code)}
-                    className={`flex w-full items-center justify-between rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-indigo-50 text-indigo-700'
-                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                    }`}
-                  >
-                    <span className="flex items-center gap-3">
-                      <Icon className="h-5 w-5" />
-                      {item.label}
-                    </span>
-                    {isExpanded ? (
-                      <Icons.ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <Icons.ChevronRight className="h-4 w-4" />
-                    )}
-                  </button>
-                ) : (
-                  <Link
-                    to={item.path}
-                    onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-indigo-50 text-indigo-700'
-                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    {item.label}
-                  </Link>
-                )}
-                {hasChildren && isExpanded && (
-                  <div className="ml-4 mt-1 space-y-1 border-l border-slate-200 pl-2">
-                    {item.children?.map((child) => {
-                      const ChildIcon = (Icons as any)[child.icon] || Icons.Circle
-                      const childActive = activeCodes.has(child.code)
-                      return (
-                        <Link
-                          key={child.code}
-                          to={child.path}
-                          onClick={() => setMobileOpen(false)}
-                          className={`flex items-center gap-3 rounded-lg px-4 py-2 text-sm transition-colors ${
-                            childActive
-                              ? 'bg-indigo-50 text-indigo-700'
-                              : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                          }`}
-                        >
-                          <ChildIcon className="h-4 w-4" />
-                          {child.label}
-                        </Link>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+          {menu && (
+            <MenuNodes
+              items={menu}
+              depth={0}
+              activeCodes={activeCodes}
+              expanded={expanded}
+              toggleExpand={toggleExpand}
+              onNavigate={closeMobileDrawerIfNeeded}
+            />
+          )}
         </nav>
         <div className="w-64 border-t border-slate-200 p-4">
           <a
@@ -166,7 +201,7 @@ export function Sidebar({ open }: { open: boolean }) {
       {mobileOpen && (
         <div
           className="fixed inset-0 z-20 bg-black/30 lg:hidden"
-          onClick={() => setMobileOpen(false)}
+          onClick={() => onMobileOpenChange(false)}
         />
       )}
     </>

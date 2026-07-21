@@ -50,11 +50,21 @@ async function main() {
 
   // Public health check (no auth required)
   app.get("/api/gateway/health", async (c) => {
+    const [opencodeHealth, taskviewHealth, supersetHealth, buildingaiHealth] = await Promise.all([
+      probeHttp(config.subsystems.opencode.baseUrl),
+      probeHttp(config.subsystems.taskview.webBaseUrl),
+      probeHttp(config.subsystems.superset.baseUrl),
+      probeHttp(config.subsystems.buildingai.baseUrl),
+    ])
     return c.json({
       status: "ok",
       database: await checkDatabase(),
       redis: "connected",
       keycloak: config.keycloak.url,
+      opencode: opencodeHealth ? "online" : "offline",
+      taskview: taskviewHealth ? "online" : "offline",
+      superset: supersetHealth ? "online" : "offline",
+      buildingai: buildingaiHealth ? "online" : "offline",
     })
   })
 
@@ -141,6 +151,7 @@ async function main() {
   app.use("/api/*", requireAuth(auth, keycloakAdmin))
   app.use("/api/*", auditLogger())
   app.use("/api/code/*", requireModuleAccess())
+  app.use("/api/taskview/*", requireModuleAccess())
   app.use("/api/bi/*", requireModuleAccess())
   app.use("/api/agent/*", requireModuleAccess())
   app.use("/api/pipeline/*", requireModuleAccess())
@@ -239,6 +250,18 @@ async function checkDatabase(): Promise<string> {
     return "connected"
   } catch (err) {
     return "disconnected"
+  }
+}
+
+async function probeHttp(url: string): Promise<boolean> {
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 3000)
+    const res = await fetch(url, { method: "GET", signal: controller.signal })
+    clearTimeout(timeout)
+    return res.ok || res.status < 500
+  } catch {
+    return false
   }
 }
 

@@ -1,6 +1,9 @@
 import { Hono } from "hono"
 import { KeycloakAdminClient } from "../keycloak.js"
 import { getFieldPermissions, filterFields } from "../sync.js"
+import { isValidBuildingAiPassword, syncUserToBuildingAi } from "../buildingai-sync.js"
+import { syncUserToTaskView } from "../taskview-sync.js"
+import { syncUserToSuperset } from "../superset-sync.js"
 import type { GatewayConfig } from "../types.js"
 
 export function keycloakAdminRouter(config: GatewayConfig) {
@@ -14,9 +17,41 @@ export function keycloakAdminRouter(config: GatewayConfig) {
   })
 
   app.post("/users", async (c) => {
-    const body = await c.req.json()
-    const result = await kc.createUser(body)
-    return c.json(result, 201)
+    const body = (await c.req.json()) as {
+      username: string
+      email?: string
+      firstName?: string
+      lastName?: string
+      enabled?: boolean
+      password?: string
+    }
+    if (body.password && !isValidBuildingAiPassword(body.password)) {
+      return c.json(
+        { error: "密码须为 6–20 位且同时包含字母和数字（与 BuildingAI 一致）" },
+        400,
+      )
+    }
+    const { password, ...userFields } = body
+    const result = await kc.createUser(userFields)
+    let buildingAiSync: Awaited<ReturnType<typeof syncUserToBuildingAi>> | null = null
+    let taskViewSync: Awaited<ReturnType<typeof syncUserToTaskView>> | null = null
+    let supersetSync: Awaited<ReturnType<typeof syncUserToSuperset>> | null = null
+    if (password && result.id) {
+      await kc.setUserPassword(result.id, password, false)
+      const syncInput = {
+        username: body.username,
+        password,
+        email: body.email,
+        nickname: body.firstName || body.username,
+        isAdmin: body.username.trim().toLowerCase() === "admin",
+      }
+      ;[buildingAiSync, taskViewSync, supersetSync] = await Promise.all([
+        syncUserToBuildingAi(config, syncInput),
+        syncUserToTaskView(config, syncInput),
+        syncUserToSuperset(config, syncInput),
+      ])
+    }
+    return c.json({ ...result, buildingAiSync, taskViewSync, supersetSync }, 201)
   })
 
   app.get("/users/:id", async (c) => {
@@ -42,9 +77,48 @@ export function keycloakAdminRouter(config: GatewayConfig) {
   })
 
   app.put("/users/:id/password", async (c) => {
-    const { password, temporary } = await c.req.json()
-    await kc.setUserPassword(c.req.param("id"), password, temporary ?? false)
-    return c.json({ success: true })
+    const { password, temporary } = (await c.req.json()) as {
+      password: string
+      temporary?: boolean
+    }
+    if (!isValidBuildingAiPassword(password)) {
+      return c.json(
+        { error: "密码须为 6–20 位且同时包含字母和数字（与 BuildingAI 一致）" },
+        400,
+      )
+    }
+    const userId = c.req.param("id")
+    await kc.setUserPassword(userId, password, temporary ?? false)
+    const user = await kc.getUserById(userId)
+    let buildingAiSync: Awaited<ReturnType<typeof syncUserToBuildingAi>> | null = null
+    let taskViewSync: Awaited<ReturnType<typeof syncUserToTaskView>> | null = null
+    let supersetSync: Awaited<ReturnType<typeof syncUserToSuperset>> | null = null
+    if (user?.username) {
+      const syncInput = {
+        username: user.username,
+        password,
+        email: user.email,
+        nickname: user.firstName || user.username,
+        isAdmin: user.username.trim().toLowerCase() === "admin",
+      }
+      ;[buildingAiSync, taskViewSync, supersetSync] = await Promise.all([
+        syncUserToBuildingAi(config, syncInput),
+        syncUserToTaskView(config, syncInput),
+        syncUserToSuperset(config, syncInput),
+      ])
+    }
+    const failures = [
+      buildingAiSync && !buildingAiSync.ok ? `BuildingAI: ${buildingAiSync.error}` : null,
+      taskViewSync && !taskViewSync.ok ? `TaskView: ${taskViewSync.error}` : null,
+      supersetSync && !supersetSync.ok ? `Superset: ${supersetSync.error}` : null,
+    ].filter(Boolean)
+    return c.json({
+      success: true,
+      buildingAiSync,
+      taskViewSync,
+      supersetSync,
+      warning: failures.length ? `Keycloak 密码已更新，但子系统同步失败：${failures.join("; ")}` : undefined,
+    })
   })
 
   app.get("/users/:id/roles", async (c) => {

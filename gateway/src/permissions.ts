@@ -4,6 +4,7 @@ import type { OidcSessionData } from "./types.js"
 
 export type MenuCode =
   | "dashboard"
+  | "task_hub"
   | "code_factory"
   | "data_insights"
   | "ai_brain"
@@ -12,6 +13,7 @@ export type MenuCode =
 
 const MODULE_TO_MENU: Record<string, MenuCode> = {
   "/api/code": "code_factory",
+  "/api/taskview": "task_hub",
   "/api/bi": "data_insights",
   "/api/agent": "ai_brain",
   "/api/pipeline": "smart_pipeline",

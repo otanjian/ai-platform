@@ -7,7 +7,8 @@ export type Health = {
   redis: string
   keycloak: string
   opencode: string
-  dataease: string
+  taskview: string
+  superset: string
   buildingai: string
 }
 

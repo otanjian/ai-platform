@@ -3,6 +3,12 @@ import { fileURLToPath } from "url";
 import { db } from "./db.js";
 import * as schema from "./schema.js";
 import { eq, and } from "drizzle-orm";
+import { AI_BRAIN_SETTINGS_MENU_ITEMS } from "../ai-brain-settings-menus.ts";
+import { AI_BRAIN_KNOWLEDGE_MENU_ITEMS } from "../ai-brain-knowledge-menus.ts";
+import { AI_BRAIN_WORKSPACE_MENU_ITEMS } from "../ai-brain-workspace-menus.ts";
+import { TASK_HUB_MENU_ITEMS } from "../task-hub-menus.ts";
+import { DATA_INSIGHTS_SUPERSET_MENU_ITEMS } from "../data-insights-superset-menus.ts";
+import { collectMenuDescendants } from "../menu-tree.ts";
 
 // seed.ts lives in gateway/src/db → four levels up is the sibling workspace root (ai_assistant)
 const defaultWorkspaceRoot =
@@ -28,7 +34,8 @@ async function seed() {
   // Define full menu hierarchy aligned with 方案思路 menu panorama
   const allMenuItems = [
     { code: "dashboard", label: "总览", icon: "LayoutDashboard", path: "/dashboard", parent: null, sort: 1 },
-    { code: "code_factory", label: "代码工场", icon: "Code2", path: "/code-factory", parent: null, sort: 2 },
+    ...TASK_HUB_MENU_ITEMS,
+    { code: "code_factory", label: "代码工场", icon: "Code2", path: "/code-factory", parent: null, sort: 3 },
     { code: "code_factory.chat", label: "AI 编程会话", icon: "MessageSquare", path: "/code-factory/chat", parent: "code_factory", sort: 1 },
     { code: "code_factory.sessions", label: "会话列表", icon: "List", path: "/code-factory/sessions", parent: "code_factory", sort: 2 },
     { code: "code_factory.review", label: "代码审查", icon: "GitPullRequest", path: "/code-factory/review", parent: "code_factory", sort: 3 },
@@ -36,31 +43,20 @@ async function seed() {
     { code: "code_factory.project_init", label: "项目初始化", icon: "Rocket", path: "/code-factory/project-init", parent: "code_factory", sort: 5 },
     { code: "code_factory.github", label: "GitHub 自动化", icon: "Github", path: "/code-factory/github", parent: "code_factory", sort: 6 },
     { code: "code_factory.config", label: "配置管理", icon: "Settings", path: "/code-factory/config", parent: "code_factory", sort: 7 },
-    { code: "data_insights", label: "数据洞察", icon: "BarChart3", path: "/data-insights", parent: null, sort: 3 },
-    { code: "data_insights.dashboards", label: "仪表板中心", icon: "LayoutTemplate", path: "/data-insights/dashboards", parent: "data_insights", sort: 1 },
-    { code: "data_insights.charts", label: "图表库", icon: "PieChart", path: "/data-insights/charts", parent: "data_insights", sort: 2 },
-    { code: "data_insights.datasets", label: "数据集", icon: "Database", path: "/data-insights/datasets", parent: "data_insights", sort: 3 },
-    { code: "data_insights.smart_qa", label: "智能问数", icon: "Sparkles", path: "/data-insights/smart-qa", parent: "data_insights", sort: 4 },
-    { code: "data_insights.reports", label: "报表管理", icon: "FileText", path: "/data-insights/reports", parent: "data_insights", sort: 5 },
-    { code: "data_insights.datasources", label: "数据源管理", icon: "Server", path: "/data-insights/datasources", parent: "data_insights", sort: 6 },
-    { code: "data_insights.permissions", label: "数据权限", icon: "Shield", path: "/data-insights/permissions", parent: "data_insights", sort: 7 },
-    { code: "data_insights.orgs", label: "组织与角色", icon: "Users", path: "/data-insights/orgs", parent: "data_insights", sort: 8 },
-    { code: "data_insights.embedded", label: "嵌入式分析", icon: "Code", path: "/data-insights/embedded", parent: "data_insights", sort: 9 },
-    { code: "ai_brain", label: "AI大脑", icon: "Brain", path: "/ai-brain", parent: null, sort: 4 },
-    { code: "ai_brain.agents", label: "智能体管理", icon: "Bot", path: "/ai-brain/agents", parent: "ai_brain", sort: 1 },
-    { code: "ai_brain.knowledge", label: "知识库", icon: "Library", path: "/ai-brain/knowledge", parent: "ai_brain", sort: 2 },
-    { code: "ai_brain.models", label: "模型中心", icon: "Cpu", path: "/ai-brain/models", parent: "ai_brain", sort: 3 },
-    { code: "ai_brain.mcp", label: "MCP 工具", icon: "Wrench", path: "/ai-brain/mcp", parent: "ai_brain", sort: 4 },
-    { code: "ai_brain.chat", label: "Agent 对话", icon: "MessagesSquare", path: "/ai-brain/chat", parent: "ai_brain", sort: 5 },
-    { code: "ai_brain.publish", label: "Agent 发布", icon: "Rocket", path: "/ai-brain/publish", parent: "ai_brain", sort: 6 },
-    { code: "ai_brain.permissions", label: "应用权限", icon: "Lock", path: "/ai-brain/permissions", parent: "ai_brain", sort: 7 },
-    { code: "ai_brain.orchestration", label: "编排流程可视化", icon: "Network", path: "/ai-brain/orchestration", parent: "ai_brain", sort: 8 },
-    { code: "smart_pipeline", label: "智能流水线", icon: "Workflow", path: "/smart-pipeline", parent: null, sort: 5 },
+    ...DATA_INSIGHTS_SUPERSET_MENU_ITEMS,
+    { code: "ai_brain", label: "AI大脑", icon: "Brain", path: "/ai-brain", parent: null, sort: 5 },
+    ...AI_BRAIN_WORKSPACE_MENU_ITEMS,
+    { code: "ai_brain.agents", label: "智能体", icon: "Bot", path: "/ai-brain/agents", parent: "ai_brain", sort: 3 },
+    { code: "ai_brain.knowledge", label: "知识库", icon: "Library", path: "/ai-brain/knowledge", parent: "ai_brain", sort: 4 },
+    ...AI_BRAIN_KNOWLEDGE_MENU_ITEMS,
+    { code: "ai_brain.settings", label: "智能体设置", icon: "Settings", path: "/ai-brain/settings", parent: "ai_brain", sort: 6 },
+    ...AI_BRAIN_SETTINGS_MENU_ITEMS,
+    { code: "smart_pipeline", label: "智能流水线", icon: "Workflow", path: "/smart-pipeline", parent: null, sort: 6 },
     { code: "smart_pipeline.canvas", label: "流水线画布", icon: "Paintbrush", path: "/smart-pipeline/canvas", parent: "smart_pipeline", sort: 1 },
     { code: "smart_pipeline.templates", label: "模板市场", icon: "Store", path: "/smart-pipeline/templates", parent: "smart_pipeline", sort: 2 },
     { code: "smart_pipeline.history", label: "执行历史", icon: "History", path: "/smart-pipeline/history", parent: "smart_pipeline", sort: 3 },
     { code: "smart_pipeline.triggers", label: "触发器配置", icon: "Clock", path: "/smart-pipeline/triggers", parent: "smart_pipeline", sort: 4 },
-    { code: "system_settings", label: "系统管理", icon: "Settings", path: "/system-settings", parent: null, sort: 6 },
+    { code: "system_settings", label: "系统管理", icon: "Settings", path: "/system-settings", parent: null, sort: 7 },
     { code: "system_settings.users", label: "用户管理", icon: "Users", path: "/system-settings/users", parent: "system_settings", sort: 1 },
     { code: "system_settings.roles", label: "角色管理", icon: "Shield", path: "/system-settings/roles", parent: "system_settings", sort: 2 },
     { code: "system_settings.groups", label: "组管理", icon: "Group", path: "/system-settings/groups", parent: "system_settings", sort: 3 },
@@ -77,20 +73,24 @@ async function seed() {
   // Parent menu permissions per role. Sub-menus inherit the same permission as their parent.
   const parentPermissions = [
     { role: "super_admin", menu: "dashboard", permission: "admin" },
+    { role: "super_admin", menu: "task_hub", permission: "admin" },
     { role: "super_admin", menu: "code_factory", permission: "admin" },
     { role: "super_admin", menu: "data_insights", permission: "admin" },
     { role: "super_admin", menu: "ai_brain", permission: "admin" },
     { role: "super_admin", menu: "smart_pipeline", permission: "admin" },
     { role: "super_admin", menu: "system_settings", permission: "admin" },
     { role: "developer", menu: "dashboard", permission: "read" },
+    { role: "developer", menu: "task_hub", permission: "write" },
     { role: "developer", menu: "code_factory", permission: "write" },
     { role: "developer", menu: "smart_pipeline", permission: "read" },
     { role: "developer", menu: "system_settings", permission: "read" },
     { role: "data_analyst", menu: "dashboard", permission: "read" },
+    { role: "data_analyst", menu: "task_hub", permission: "read" },
     { role: "data_analyst", menu: "data_insights", permission: "write" },
     { role: "data_analyst", menu: "ai_brain", permission: "write" },
     { role: "data_analyst", menu: "smart_pipeline", permission: "write" },
     { role: "business_user", menu: "dashboard", permission: "read" },
+    { role: "business_user", menu: "task_hub", permission: "write" },
     { role: "business_user", menu: "data_insights", permission: "read" },
     { role: "business_user", menu: "ai_brain", permission: "read" },
     { role: "business_user", menu: "smart_pipeline", permission: "read" },
@@ -99,13 +99,13 @@ async function seed() {
   const roleRows = await db.select().from(schema.platformRole);
   const roleMap = new Map(roleRows.map((r) => [r.name, r.id]));
 
-  // Expand parent permissions into all menu items (parents + children)
+  // Expand parent permissions into all menu items (parents + descendants at any depth)
   const menuPermissions: Array<{ role: string; menu: string; permission: string; parent: string | null; displayName: string; icon: string; sort: number }> = [];
   for (const pp of parentPermissions) {
     const item = allMenuItems.find((m) => m.code === pp.menu);
     if (!item) continue;
     menuPermissions.push({ role: pp.role, menu: item.code, permission: pp.permission, parent: item.parent, displayName: item.label, icon: item.icon, sort: item.sort });
-    for (const child of allMenuItems.filter((m) => m.parent === pp.menu)) {
+    for (const child of collectMenuDescendants(allMenuItems, pp.menu)) {
       menuPermissions.push({ role: pp.role, menu: child.code, permission: pp.permission, parent: child.parent, displayName: child.label, icon: child.icon, sort: child.sort });
     }
   }
@@ -195,7 +195,8 @@ async function seed() {
   // Seed subsystem configs (default URLs)
   const subsystems = [
     { system: "opencode", baseUrl: "http://opencode:4096", authType: "none" },
-    { system: "dataease", baseUrl: "http://dataease:8100", authType: "oidc" },
+    { system: "taskview", baseUrl: "http://taskview-web:5174", authType: "token" },
+    { system: "superset", baseUrl: "http://superset:8088", authType: "token" },
     { system: "buildingai", baseUrl: "http://buildingai:4091", authType: "token" },
   ];
 

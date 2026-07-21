@@ -1,0 +1,24 @@
+---
+description: Local service startup preferences for AI Platform
+alwaysApply: true
+---
+
+# Local Service Startup
+
+When the user asks to start related/local services for this platform:
+
+## Start
+- MySQL (`:3306`), Redis (`:6379`) — usually already running locally
+- Keycloak (`:8080`) via `keycloak/docker-compose.yaml` (Colima/Docker)
+- Gateway (`:3001`) and Frontend (`:3000`)
+- BuildingAI (`:4090` API / `:4091` UI) when AI Brain embed work needs it
+- OpenCode (`:4096`) when code-factory work needs it
+- **TaskView** — local dev: API `:1401`, web `:5174` (`pnpm dev:api` + `pnpm dev:webapp` in `../TaskView`); Docker alternate: web `:8888`, API `:1725`
+- **Superset** — local non-Docker via `../superset/local_home/start-all.sh`: UI `:9060`, API `:9068`, Redis `:9063` (preferred). Docker `:8088` only if images already available.
+
+## Do NOT start
+- **DataEase** (`:8100`) — replaced by Superset; never start it as part of routine platform bring-up
+
+## Notes
+- Prefer updating/using `start-local.sh` to match this list
+- Subsystem health probes that still mention DataEase are legacy; do not treat DataEase offline as a startup failure
