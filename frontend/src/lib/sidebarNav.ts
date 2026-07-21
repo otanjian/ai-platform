@@ -49,27 +49,29 @@ export function platformWorkspacePathToBuildingAiUrl(platformPath: string): stri
   }
 }
 
-/** Platform task-hub leaf → TaskView path. */
+/** Platform task-hub leaf → TaskView embed entry (`/?_tv=&_embed=1`). */
 export function platformTaskHubPathToTaskViewPath(platformPath: string): string | null {
-  const map: Record<string, string> = {
-    '/task-hub': '/',
-    '/task-hub/inbox': '/',
-    '/task-hub/tasks': '/',
-    '/task-hub/kanban': '/',
-    '/task-hub/graph': '/',
-    '/task-hub/sprints': '/',
-    '/task-hub/collaboration': '/',
-    '/task-hub/webhooks': '/',
-    '/task-hub/integrations': '/',
-    '/task-hub/messaging': '/',
-    '/task-hub/time-reports': '/',
-    '/task-hub/analytics': '/',
-    '/task-hub/organizations': '/',
-    '/task-hub/ui-customization': '/',
-    '/task-hub/account': '/',
-    '/task-hub/settings': '/',
+  const viewByPath: Record<string, string> = {
+    '/task-hub': 'inbox',
+    '/task-hub/inbox': 'inbox',
+    '/task-hub/tasks': 'tasks',
+    '/task-hub/kanban': 'kanban',
+    '/task-hub/graph': 'graph',
+    '/task-hub/sprints': 'sprints',
+    '/task-hub/collaboration': 'collaboration',
+    '/task-hub/webhooks': 'webhooks',
+    '/task-hub/integrations': 'integrations',
+    '/task-hub/messaging': 'messaging',
+    '/task-hub/time-reports': 'time-reports',
+    '/task-hub/analytics': 'analytics',
+    '/task-hub/organizations': 'organizations',
+    '/task-hub/ui-customization': 'ui-customization',
+    '/task-hub/account': 'account',
+    '/task-hub/settings': 'settings',
   }
-  return map[platformPath] ?? null
+  const view = viewByPath[platformPath]
+  if (!view) return null
+  return `/?_tv=${encodeURIComponent(view)}&_embed=1`
 }
 
 /** Platform data-insights leaf → Superset path. */

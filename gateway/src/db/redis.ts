@@ -10,7 +10,7 @@ export const redis = new Redis(redisUrl, {
 
 export async function getToken(
   userId: string,
-  system: "superset" | "taskview" | "buildingai" | "dataease",
+  system: "superset" | "taskview" | "buildingai",
 ): Promise<string | null> {
   const key = `token:${userId}:${system}`
   return redis.get(key)
@@ -18,7 +18,7 @@ export async function getToken(
 
 export async function setToken(
   userId: string,
-  system: "superset" | "taskview" | "buildingai" | "dataease",
+  system: "superset" | "taskview" | "buildingai",
   token: string,
   ttlSeconds: number,
 ): Promise<void> {
@@ -28,7 +28,7 @@ export async function setToken(
 
 export async function deleteToken(
   userId: string,
-  system: "superset" | "taskview" | "buildingai" | "dataease",
+  system: "superset" | "taskview" | "buildingai",
 ): Promise<void> {
   const key = `token:${userId}:${system}`
   await redis.del(key)

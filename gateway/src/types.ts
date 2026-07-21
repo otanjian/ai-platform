@@ -24,8 +24,6 @@ export type KeycloakConfig = {
 
 export type SubsystemConfig = {
   opencode: { baseUrl: string; authType: "none"; password?: string }
-  /** @deprecated Retained for migration; prefer superset */
-  dataease?: { baseUrl: string; authType: "oidc"; clientId: string; clientSecret: string }
   taskview: {
     webBaseUrl: string
     apiBaseUrl: string

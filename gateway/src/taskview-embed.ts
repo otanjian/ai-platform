@@ -22,15 +22,15 @@ export async function mintTaskViewEmbedToken(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ login, secret }),
     })
-    const body = (await response.json()) as {
+    const body = (await response.json().catch(() => null)) as {
       access?: string
       refresh?: string
       message?: string
-    }
-    if (!response.ok || !body.access) {
+    } | null
+    if (!response.ok || !body?.access) {
       return {
         ok: false,
-        error: body.message || `TaskView platform-sso failed: ${response.status}`,
+        error: body?.message || `TaskView platform-sso failed: ${response.status}`,
       }
     }
     return {

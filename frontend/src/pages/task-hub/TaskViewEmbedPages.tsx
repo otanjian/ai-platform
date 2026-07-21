@@ -13,12 +13,18 @@ type EmbedSession = {
 
 function buildEmbedUrl(
   base: string,
-  path: string,
+  pathWithOptionalQuery: string,
   tokenParam: string,
   refreshParam?: string,
 ) {
-  const pathNorm = path.startsWith('/') ? path : `/${path}`
-  const url = new URL(`${base.replace(/\/$/, '')}${pathNorm}`)
+  const pathNorm = pathWithOptionalQuery.startsWith('/')
+    ? pathWithOptionalQuery
+    : `/${pathWithOptionalQuery}`
+  const [pathname, search = ''] = pathNorm.split('?')
+  const url = new URL(`${base.replace(/\/$/, '')}${pathname || '/'}`)
+  if (search) {
+    new URLSearchParams(search).forEach((v, k) => url.searchParams.set(k, v))
+  }
   url.searchParams.set('_t', tokenParam)
   if (refreshParam) url.searchParams.set('_r', refreshParam)
   return url.toString()

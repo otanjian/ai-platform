@@ -1,6 +1,6 @@
 /**
  * 待办中心 — TaskView 导航完整镜像（L1 + L2）。
- * 平台 path `/task-hub/...` → TaskView web 路径由 mapper 解析。
+ * 平台 path `/task-hub/...` → TaskView embed URL（含 _tv 视图 + _embed 去壳）。
  */
 export type FlatMenuItem = {
   code: string
@@ -32,25 +32,32 @@ export const TASK_HUB_MENU_ITEMS: FlatMenuItem[] = [
   { code: "task_hub.settings", label: "设置", icon: "Settings", path: "/task-hub/settings", parent: "task_hub", sort: 15 },
 ]
 
-/** Platform leaf → TaskView path (org/project chosen inside TaskView after SSO). */
+/** Platform leaf → TaskView view key consumed as `?_tv=` after SSO. */
+export const TASK_HUB_VIEW_BY_PATH: Record<string, string> = {
+  "/task-hub": "inbox",
+  "/task-hub/inbox": "inbox",
+  "/task-hub/tasks": "tasks",
+  "/task-hub/kanban": "kanban",
+  "/task-hub/graph": "graph",
+  "/task-hub/sprints": "sprints",
+  "/task-hub/collaboration": "collaboration",
+  "/task-hub/webhooks": "webhooks",
+  "/task-hub/integrations": "integrations",
+  "/task-hub/messaging": "messaging",
+  "/task-hub/time-reports": "time-reports",
+  "/task-hub/analytics": "analytics",
+  "/task-hub/organizations": "organizations",
+  "/task-hub/ui-customization": "ui-customization",
+  "/task-hub/account": "account",
+  "/task-hub/settings": "settings",
+}
+
+/**
+ * Platform leaf → TaskView embed entry URL.
+ * Always lands on `/` with tokens; `_tv` selects the post-login route; `_embed=1` hides TaskView chrome.
+ */
 export function platformTaskHubPathToTaskViewPath(platformPath: string): string | null {
-  const map: Record<string, string> = {
-    "/task-hub": "/",
-    "/task-hub/inbox": "/",
-    "/task-hub/tasks": "/",
-    "/task-hub/kanban": "/",
-    "/task-hub/graph": "/",
-    "/task-hub/sprints": "/",
-    "/task-hub/collaboration": "/",
-    "/task-hub/webhooks": "/",
-    "/task-hub/integrations": "/",
-    "/task-hub/messaging": "/",
-    "/task-hub/time-reports": "/",
-    "/task-hub/analytics": "/",
-    "/task-hub/organizations": "/",
-    "/task-hub/ui-customization": "/",
-    "/task-hub/account": "/",
-    "/task-hub/settings": "/",
-  }
-  return map[platformPath] ?? null
+  const view = TASK_HUB_VIEW_BY_PATH[platformPath]
+  if (!view) return null
+  return `/?_tv=${encodeURIComponent(view)}&_embed=1`
 }

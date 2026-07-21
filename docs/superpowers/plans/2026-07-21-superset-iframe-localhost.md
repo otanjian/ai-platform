@@ -17,9 +17,9 @@
 **Files:**
 - Modify: `gateway/tests/subsystem-topology.test.ts`
 
-- [ ] **Step 1: Extend test** to expect `subsystems.superset.baseUrl === "http://localhost:9060"` and `apiBaseUrl === "http://127.0.0.1:9068"` (mirror BuildingAI comment).
+- [x] **Step 1: Extend test** to expect `subsystems.superset.baseUrl === "http://localhost:9060"` and `apiBaseUrl === "http://127.0.0.1:9068"` (mirror BuildingAI comment).
 
-- [ ] **Step 2: Run** `cd gateway && bun test tests/subsystem-topology.test.ts` — confirm RED on baseUrl.
+- [x] **Step 2: Run** `cd gateway && bun test tests/subsystem-topology.test.ts` — confirm RED on baseUrl.
 
 ### Task 2: Defaults + examples
 
@@ -30,12 +30,12 @@
 - Modify: `start-local.sh`
 - Modify: `.cursor/rules/local-services.mdc`
 
-- [ ] **Step 1: Change** Superset `baseUrl` default/example/local to `http://localhost:9060`; leave `apiBaseUrl` as `http://127.0.0.1:9068`. Add brief comment like BuildingAI.
+- [x] **Step 1: Change** Superset `baseUrl` default/example/local to `http://localhost:9060`; leave `apiBaseUrl` as `http://127.0.0.1:9068`. Add brief comment like BuildingAI.
 
-- [ ] **Step 2: Run** topology test — GREEN.
+- [x] **Step 2: Run** topology test — GREEN.
 
-- [ ] **Step 3: Restart** gateway; confirm `/api/bi/embed-session` returns `uiBaseUrl` with `localhost:9060`.
+- [x] **Step 3: Restart** gateway; confirm `/api/bi/embed-session` returns `uiBaseUrl` with `localhost:9060`.
 
 ### Task 3: Manual check
 
-- [ ] Open `http://localhost:3000/data-insights/dashboards` while logged in — no Superset Sign in modal.
+- [ ] Open `http://localhost:3000/data-insights/dashboards` while logged in — no Superset Sign in modal. (manual; user verify after refresh)

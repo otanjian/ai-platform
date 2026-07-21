@@ -8,7 +8,7 @@ import {
 } from '../../lib/sidebarNav.ts'
 
 /** BuildingAI web UI (Vite client). */
-const BUILDINGAI_UI_FALLBACK = 'http://127.0.0.1:4091'
+const BUILDINGAI_UI_FALLBACK = 'http://localhost:4091'
 
 type EmbedSession = {
   ok: boolean
@@ -35,7 +35,7 @@ function buildEmbedUrl(
   if (token) resolved.searchParams.set('_t', token)
   if (shellEmbed) resolved.searchParams.set('_embed', '1')
   // Bust iframe document cache so BuildingAI layout CSS/JS updates are visible after refresh.
-  resolved.searchParams.set('_v', 'chat-fullwidth-1')
+  resolved.searchParams.set('_v', 'console-embed-rbac-2')
   return resolved.toString()
 }
 

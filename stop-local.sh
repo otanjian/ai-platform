@@ -17,4 +17,4 @@ done
 #   (cd ../superset && docker compose down)
 
 echo "Stopped gateway / frontend / TaskView."
-echo "(Superset Docker stack left running; DataEase is never managed here.)"
+echo "(Superset stack left running if started separately; DataEase is no longer part of the platform.)"

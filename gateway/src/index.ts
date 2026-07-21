@@ -4,6 +4,7 @@ import { deleteCookie, setCookie, getCookie } from "hono/cookie"
 import { loadConfig } from "./config.js"
 import { AuthManager } from "./auth.js"
 import { OidcClient, type OidcState, type OidcUserInfo } from "./oidc.js"
+import { resolveOidcUsername } from "./oidc-username.js"
 import { KeycloakAdminClient } from "./keycloak.js"
 import { syncUserFromKeycloak, getPlatformUserByKeycloakId } from "./sync.js"
 import { requireModuleAccess, getPlatformUserId } from "./permissions.js"
@@ -104,7 +105,8 @@ async function main() {
     try {
       const tokens = await oidc.exchangeCode(code, state.redirectUri, state.codeVerifier)
       const userInfo = await oidc.getUserInfo(tokens.access_token)
-      const oidcData = buildOidcSession(userInfo, tokens)
+      const username = await resolveOidcUsername(userInfo, keycloakAdmin)
+      const oidcData = buildOidcSession(userInfo, tokens, username)
       await syncUserFromKeycloak(oidcData.sub, oidcData.username, oidcData.email, keycloakAdmin)
       auth.createOidcSession(c, oidcData)
       return c.redirect(`${config.frontendUrl}/dashboard`)
@@ -188,11 +190,15 @@ async function main() {
   })
 }
 
-function buildOidcSession(userInfo: OidcUserInfo, tokens: { access_token: string; refresh_token?: string; expires_at: number }): OidcSessionData {
+function buildOidcSession(
+  userInfo: OidcUserInfo,
+  tokens: { access_token: string; refresh_token?: string; expires_at: number },
+  username: string,
+): OidcSessionData {
   const realmRoles = extractRealmRoles(userInfo)
   return {
     sub: userInfo.sub,
-    username: userInfo.preferred_username || userInfo.sub,
+    username,
     email: userInfo.email,
     name: userInfo.name,
     groups: extractGroups(userInfo),

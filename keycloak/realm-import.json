@@ -264,27 +264,68 @@
       "optionalClientScopes": [
         "offline_access"
       ]
+    }
+  ],
+  "clientScopes": [
+    {
+      "id": "scope-profile",
+      "name": "profile",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "username",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "full name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-full-name-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
     },
     {
-      "id": "client-dataease-proxy",
-      "clientId": "dataease-proxy",
-      "name": "DataEase OIDC Proxy",
-      "description": "Confidential client used by the BFF to exchange tokens for DataEase",
-      "enabled": true,
-      "clientAuthenticatorType": "client-secret",
-      "secret": "dataease-proxy-secret",
-      "redirectUris": ["http://localhost:3001/api/bi/auth/callback"],
-      "webOrigins": ["http://localhost:3001"],
-      "standardFlowEnabled": true,
-      "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": true,
-      "publicClient": false,
+      "id": "scope-email",
+      "name": "email",
       "protocol": "openid-connect",
-      "defaultClientScopes": [
-        "profile",
-        "email",
-        "roles"
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "email",
+            "claim.name": "email",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
       ]
     }
   ],

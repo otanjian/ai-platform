@@ -20,14 +20,16 @@ describe("task hub menus", () => {
     expect(codes.has("task_hub.kanban")).toBe(true)
   })
 
-  test("path mapper covers leaves", () => {
-    expect(platformTaskHubPathToTaskViewPath("/task-hub/inbox")).toBe("/")
+  test("path mapper maps distinct embed views", () => {
+    expect(platformTaskHubPathToTaskViewPath("/task-hub/inbox")).toBe("/?_tv=inbox&_embed=1")
+    expect(platformTaskHubPathToTaskViewPath("/task-hub/kanban")).toBe("/?_tv=kanban&_embed=1")
+    expect(platformTaskHubPathToTaskViewPath("/task-hub/settings")).toBe("/?_tv=settings&_embed=1")
     expect(platformTaskHubPathToTaskViewPath("/task-hub/unknown")).toBeNull()
   })
 })
 
 describe("data insights superset menus", () => {
-  test("does not include DataEase-only codes", () => {
+  test("does not include obsolete DataEase-era menu codes", () => {
     const codes = DATA_INSIGHTS_SUPERSET_MENU_ITEMS.map((m) => m.code)
     expect(codes).not.toContain("data_insights.smart_qa")
     expect(codes).not.toContain("data_insights.orgs")

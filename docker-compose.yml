@@ -1,6 +1,10 @@
-# Optional containerized orchestration.
-# The default deployment path is local (see README.md and start-local.sh).
-# Only use this file if you explicitly want to run the platform via Docker.
+# Optional containerized orchestration for platform core services.
+# The default local path is start-local.sh (not this file).
+#
+# External subsystems (NOT started by this compose — sibling repos):
+#   TaskView  ../TaskView   web :5174  API :1401
+#   Superset  ../superset   UI  :9060  API :9068  (local_home/start-all.sh)
+# Configure their URLs in gateway/config.yaml (subsystems.taskview / subsystems.superset).
 version: "3.8"
 
 services:
@@ -8,8 +12,6 @@ services:
     build: ./frontend
     ports:
       - "3000:3000"
-    environment:
-      - VITE_GATEWAY_URL=http://gateway:3001
     depends_on:
       - gateway
     networks:
@@ -20,13 +22,9 @@ services:
     ports:
       - "3001:3001"
     environment:
-      - KEYCLOAK_URL=http://keycloak:8080
-      - KEYCLOAK_REALM=aiplatform
-      - OPENCODE_URL=http://opencode:4096
-      - DATAEASE_URL=http://dataease:8100
-      - BUILDINGAI_URL=http://buildingai:4091
       - DATABASE_URL=mysql://aiplatform:aiplatform@mysql:3306/aiplatform
       - REDIS_URL=redis://redis:6379
+    # Mount or bake gateway/config.yaml with TaskView/Superset/BuildingAI/OpenCode URLs.
     depends_on:
       - keycloak
       - mysql
@@ -81,23 +79,6 @@ services:
       - "4096:4096"
     environment:
       - OPENCODE_SERVER_PASSWORD=opencode
-    networks:
-      - aiplatform
-
-  dataease:
-    # Use DataEase official docker-compose or image
-    # Placeholder: replace with actual DataEase service definition
-    image: dataease/dataease:latest
-    ports:
-      - "8100:8100"
-    environment:
-      - DE_MYSQL_HOST=mysql
-      - DE_MYSQL_PORT=3306
-      - DE_MYSQL_DB=dataease
-      - DE_MYSQL_USER=aiplatform
-      - DE_MYSQL_PASSWORD=aiplatform
-    depends_on:
-      - mysql
     networks:
       - aiplatform
 

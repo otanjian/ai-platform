@@ -6,7 +6,7 @@ TASKVIEW_ROOT="$(cd "$ROOT/../TaskView" && pwd)"
 SUPERSET_ROOT="$(cd "$ROOT/../superset" && pwd)"
 
 echo "Starting AI Platform locally..."
-echo "(DataEase is intentionally skipped; TaskView + Superset are required.)"
+echo "(TaskView + Superset required; DataEase has been removed.)"
 
 # Ensure MySQL and Redis are reachable
 mysqladmin ping -h localhost -P 3306 --silent || {
@@ -57,7 +57,8 @@ fi
 
 # Optional subsystems (do not fail startup if missing)
 # OpenCode :4096, BuildingAI :4090/:4091 — start only when already available / separately requested
-# DataEase :8100 — intentionally NEVER started
+# When starting OpenCode locally: NEVER set OPENCODE_SERVER_PASSWORD/USERNAME (iframe must not prompt Basic Auth).
+# DataEase has been removed from the platform.
 
 cd "$ROOT/gateway"
 if [ ! -f config.yaml ]; then
@@ -92,5 +93,5 @@ echo "Gateway:   http://localhost:3001"
 echo "Frontend:  http://localhost:3000"
 echo "Keycloak:  http://localhost:8080"
 echo "TaskView:  http://localhost:5174 (API :1401)"
-echo "Superset:  http://127.0.0.1:9060 (API :9068)"
-echo "(DataEase skipped)"
+echo "Superset:  http://localhost:9060 (API http://127.0.0.1:9068)"
+echo "(DataEase removed — use TaskView + Superset)"

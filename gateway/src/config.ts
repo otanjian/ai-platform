@@ -52,7 +52,6 @@ export type RawConfig = {
   }
   subsystems?: {
     opencode?: { baseUrl?: string; password?: string }
-    dataease?: { baseUrl?: string; clientId?: string; clientSecret?: string }
     taskview?: {
       webBaseUrl?: string
       apiBaseUrl?: string
@@ -192,21 +191,13 @@ function parseKeycloakConfig(raw?: RawConfig["keycloak"]): KeycloakConfig {
   }
 }
 
-function parseSubsystemsConfig(raw?: RawConfig["subsystems"]): SubsystemConfig {
+export function parseSubsystemsConfig(raw?: RawConfig["subsystems"]): SubsystemConfig {
   return {
     opencode: {
       baseUrl: raw?.opencode?.baseUrl ?? "http://localhost:4096",
       authType: "none",
       password: raw?.opencode?.password ?? "opencode",
     },
-    dataease: raw?.dataease
-      ? {
-          baseUrl: raw.dataease.baseUrl ?? "http://localhost:8100",
-          authType: "oidc",
-          clientId: raw.dataease.clientId ?? "dataease-proxy",
-          clientSecret: raw.dataease.clientSecret ?? "dataease-proxy-secret",
-        }
-      : undefined,
     taskview: {
       webBaseUrl: raw?.taskview?.webBaseUrl ?? "http://localhost:5174",
       apiBaseUrl: raw?.taskview?.apiBaseUrl ?? "http://localhost:1401",
@@ -217,7 +208,9 @@ function parseSubsystemsConfig(raw?: RawConfig["subsystems"]): SubsystemConfig {
         raw?.taskview?.platformSsoSecret ?? "aiplatform-taskview-sso-secret",
     },
     superset: {
-      baseUrl: raw?.superset?.baseUrl ?? "http://127.0.0.1:9060",
+      // UI: localhost keeps iframe same-site with platform on localhost:3000.
+      // API: 127.0.0.1 keeps mint/proxy on IPv4 (webpack UI still proxies to :9068).
+      baseUrl: raw?.superset?.baseUrl ?? "http://localhost:9060",
       apiBaseUrl: raw?.superset?.apiBaseUrl ?? "http://127.0.0.1:9068",
       authType: "token",
       adminUsername: raw?.superset?.adminUsername ?? "admin",
@@ -226,8 +219,10 @@ function parseSubsystemsConfig(raw?: RawConfig["subsystems"]): SubsystemConfig {
         raw?.superset?.platformSsoSecret ?? "aiplatform-superset-sso-secret",
     },
     buildingai: {
+      // UI: localhost keeps iframe same-site with platform on localhost:3000.
+      // API: 127.0.0.1 avoids macOS localhost→::1 hitting a foreign IPv6 :4090 listener.
       baseUrl: raw?.buildingai?.baseUrl ?? "http://localhost:4091",
-      apiBaseUrl: raw?.buildingai?.apiBaseUrl ?? "http://localhost:4090",
+      apiBaseUrl: raw?.buildingai?.apiBaseUrl ?? "http://127.0.0.1:4090",
       authType: "token",
       apiKey: raw?.buildingai?.apiKey ?? "",
       adminUsername: raw?.buildingai?.adminUsername ?? "Rock",

@@ -1,5 +1,7 @@
 # 企业AI智造平台 - 任务逐项检查与浏览器验证报告
 
+> **Superseded (2026-07-21):** DataEase 已从平台移除，由 TaskView + Superset 替代。下文中关于 DataEase / `:8100` 的条目仅作历史记录，不再代表当前架构。
+
 > 生成时间：2026-07-19
 > 环境：macOS + MariaDB 3306 + Redis 6379 + Keycloak 8080（Docker 临时启动）+ Gateway 3001 + Frontend 3000
 > 浏览器验证结论：Cursor/Playwright 浏览器环境无法访问 `localhost:3000/3001` 及本机 IP 端口，因此**无法在此会话内完成真实浏览器截图验证**。以下结论基于代码审查、TypeScript 类型检查与 Shell 端点测试。

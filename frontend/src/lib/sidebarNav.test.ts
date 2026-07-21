@@ -65,9 +65,11 @@ describe('platformWorkspacePathToBuildingAiUrl', () => {
 })
 
 describe('platformTaskHubPathToTaskViewPath', () => {
-  it('maps task hub leaves to TaskView root (org/project chosen in-app)', () => {
-    expect(platformTaskHubPathToTaskViewPath('/task-hub/inbox')).toBe('/')
-    expect(platformTaskHubPathToTaskViewPath('/task-hub/settings')).toBe('/')
+  it('maps each leaf to a distinct embed view', () => {
+    expect(platformTaskHubPathToTaskViewPath('/task-hub/inbox')).toBe('/?_tv=inbox&_embed=1')
+    expect(platformTaskHubPathToTaskViewPath('/task-hub/kanban')).toBe('/?_tv=kanban&_embed=1')
+    expect(platformTaskHubPathToTaskViewPath('/task-hub/settings')).toBe('/?_tv=settings&_embed=1')
+    expect(platformTaskHubPathToTaskViewPath('/task-hub/analytics')).toBe('/?_tv=analytics&_embed=1')
   })
 
   it('rejects unknown paths', () => {
@@ -84,7 +86,7 @@ describe('platformDataInsightsPathToSupersetPath', () => {
     expect(platformDataInsightsPathToSupersetPath('/data-insights/security/users')).toBe('/users/')
   })
 
-  it('rejects DataEase-only paths', () => {
+  it('rejects obsolete non-Superset data-insights paths', () => {
     expect(platformDataInsightsPathToSupersetPath('/data-insights/smart-qa')).toBeNull()
     expect(platformDataInsightsPathToSupersetPath('/data-insights/orgs')).toBeNull()
   })

@@ -6,12 +6,6 @@ function minimalConfig(overrides?: Partial<GatewayConfig["subsystems"]["building
   return {
     subsystems: {
       opencode: { baseUrl: "http://localhost:4096", authType: "none" },
-      dataease: {
-        baseUrl: "http://localhost:8100",
-        authType: "oidc",
-        clientId: "x",
-        clientSecret: "y",
-      },
       taskview: {
         webBaseUrl: "http://localhost:5174",
         apiBaseUrl: "http://localhost:1401",

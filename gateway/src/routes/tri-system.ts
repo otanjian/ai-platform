@@ -4,10 +4,13 @@ import { getToken, setToken } from "../db/redis.js"
 import { mintBuildingAiEmbedToken } from "../buildingai-embed.js"
 import { mintTaskViewEmbedToken } from "../taskview-embed.js"
 import { mintSupersetEmbedToken } from "../superset-embed.js"
+import { KeycloakAdminClient } from "../keycloak.js"
+import { resolveSessionLogin } from "../oidc-username.js"
 import type { GatewayConfig, Session } from "../types.js"
 
 export function triSystemRouter(config: GatewayConfig) {
   const app = new Hono<{ Variables: { session?: Session; platformUserId?: number } }>()
+  const keycloakAdmin = new KeycloakAdminClient(config.keycloak)
 
   app.all("/code/*", async (c) => {
     const target = `${config.subsystems.opencode.baseUrl}${c.req.path.replace("/api/code", "")}`
@@ -22,8 +25,8 @@ export function triSystemRouter(config: GatewayConfig) {
 
   app.get("/taskview/embed-session", async (c) => {
     const session = c.get("session")
-    const username = session?.username
-    if (!username) return c.json({ ok: false, error: "Unauthorized" }, 401)
+    if (!session?.username) return c.json({ ok: false, error: "Unauthorized" }, 401)
+    const username = await resolveSessionLogin(session, keycloakAdmin)
     const result = await mintTaskViewEmbedToken(config, username)
     if (!result.ok) {
       return c.json({ ok: false, error: result.error }, 502)
@@ -42,8 +45,8 @@ export function triSystemRouter(config: GatewayConfig) {
 
   app.get("/bi/embed-session", async (c) => {
     const session = c.get("session")
-    const username = session?.username
-    if (!username) return c.json({ ok: false, error: "Unauthorized" }, 401)
+    if (!session?.username) return c.json({ ok: false, error: "Unauthorized" }, 401)
+    const username = await resolveSessionLogin(session, keycloakAdmin)
     const result = await mintSupersetEmbedToken(config, username)
     if (!result.ok) {
       return c.json({ ok: false, error: result.error }, 502)
@@ -60,8 +63,8 @@ export function triSystemRouter(config: GatewayConfig) {
   app.all("/bi/*", async (c) => {
     if (c.req.path.endsWith("/embed-session")) return c.notFound()
     const session = c.get("session")
-    const username = session?.username
-    if (!username) return c.json({ error: "Unauthorized" }, 401)
+    if (!session?.username) return c.json({ error: "Unauthorized" }, 401)
+    const username = await resolveSessionLogin(session, keycloakAdmin)
     const minted = await mintSupersetEmbedToken(config, username)
     if (!minted.ok) return c.json({ error: minted.error }, 502)
     const target = `${config.subsystems.superset.apiBaseUrl}${c.req.path.replace("/api/bi", "")}`
@@ -74,8 +77,8 @@ export function triSystemRouter(config: GatewayConfig) {
 
   app.get("/agent/embed-session", async (c) => {
     const session = c.get("session")
-    const username = session?.username
-    if (!username) return c.json({ ok: false, error: "Unauthorized" }, 401)
+    if (!session?.username) return c.json({ ok: false, error: "Unauthorized" }, 401)
+    const username = await resolveSessionLogin(session, keycloakAdmin)
     const result = await mintBuildingAiEmbedToken(config, username)
     if (!result.ok) {
       return c.json({ ok: false, error: result.error }, 502)
